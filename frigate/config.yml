@@ -1,0 +1,303 @@
+mqtt:
+  host: 10.0.100.235 # <---- same mqtt broker that home assistant uses
+  user: frigate
+  password: frigate
+
+ffmpeg:
+  hwaccel_args: preset-vaapi
+
+detectors:
+  onnx:
+    type: onnx
+    device: GPU
+
+model:
+  model_type: yolo-generic
+  width: 320 # <--- should match the imgsize set during model export
+  height: 320 # <--- should match the imgsize set during model export
+  input_tensor: nchw
+  input_dtype: float
+  path: /config/model_cache/yolov9-t-320.onnx
+  labelmap_path: /labelmap/coco-80.txt
+  input_pixel_format: rgb
+
+detect:
+  enabled: true
+  fps: 5
+  min_initialized: 2
+  max_disappeared: 25
+  stationary:
+    classifier: true
+    interval: 50
+    threshold: 50
+    max_frames:
+      default: 3000
+      objects:
+        person: 1000
+  annotation_offset: 0
+
+audio:
+  enabled: true
+  max_not_heard: 30
+  min_volume: 750
+  listen:
+    - bark
+    - fire_alarm
+    - scream
+    - yell
+    - boom
+    - dog
+    - dogs
+    - emergency_vehicle
+    - telephone
+    - speech
+telemetry:
+  network_interfaces:
+    - eth
+    - enp
+    - eno
+  stats:
+    amd_gpu_stats: false
+    intel_gpu_stats: true
+    network_bandwidth: true
+  version_check: true
+
+
+record:
+  enabled: true
+  motion:
+    days: 7
+  alerts:
+    retain:
+      days: 14
+      mode: motion
+    pre_capture: 15
+  detections:
+    retain:
+      days: 21
+      mode: all
+  continuous:
+    days: 5
+snapshots:
+  enabled: true
+  retain:
+    default: 90
+    objects:
+      person: 365
+  timestamp: true
+  crop: true
+
+birdseye:
+  enabled: true
+  restream: false
+  width: 1280
+  height: 720
+  quality: 8
+  mode: objects
+  inactivity_threshold: 30
+  layout:
+    scaling_factor: 2.0
+    max_cameras: 1
+  idle_heartbeat_fps: 0.0
+
+cameras:
+  KitchenCam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.240:554/stream1
+          roles:
+            - detect
+            - audio
+            - record
+    live:
+      streams:
+        Stream 1: KitchenCam
+
+  DownstairsWideCam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.140:554/stream1
+          roles:
+            - record
+            - audio
+            - detect
+    live:
+      streams:
+        Stream 1: DownstairsWideCam_1
+
+  KidsBedCam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.134:554/stream1
+          roles:
+            - detect
+            - record
+            - audio
+    live:
+      streams:
+        Stream 1: KidsBedCam
+
+  BedroomBedCam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.219:554/stream1
+          roles:
+            - detect
+            - audio
+            - record
+    live:
+      streams:
+        Stream 1: BedroomBedCam
+
+  DownstairsCam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.248:554/stream1
+          roles:
+            - record
+            - audio
+            - detect
+    live:
+      streams:
+        Stream 1: DownstairsCam
+
+  BedroomCam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.154:554/stream1
+          roles:
+            - detect
+            - record
+            - audio
+    live:
+      streams:
+        Stream 1: BedroomCam
+
+ 
+  workspacecam:
+    enabled: true
+    ffmpeg:
+      inputs:
+        - path: rtsp://watchlive:watchlive@10.0.220.242:554/stream1
+          roles:
+            - audio
+            - record
+            - detect
+    live:
+      streams:
+        Stream 1: workspacecam_1
+
+go2rtc:
+  streams:
+    KitchenCam:
+      - rtsp://watchlive:watchlive@10.0.220.240:554/stream1
+    KidsBedCam:
+      - rtsp://watchlive:watchlive@10.0.220.134:554/stream1
+    BedroomBedCam:
+      - rtsp://watchlive:watchlive@10.0.220.219:554/stream1
+    DownstairsCam:
+      - rtsp://watchlive:watchlive@10.0.220.248:554/stream1
+    BedroomCam:
+      - rtsp://watchlive:watchlive@10.0.220.154:554/stream1
+    DownstairsWideCam_1:
+      - rtsp://watchlive:watchlive@10.0.220.140:554/stream1
+    WorkspaceCam_1:
+      - rtsp://watchlive:watchlive@10.0.220.242:554/stream1
+semantic_search:
+  enabled: true
+  model_size: small
+
+face_recognition:
+  enabled: true
+  model_size: small
+
+lpr:
+  enabled: false
+
+classification:
+  bird:
+    enabled: false
+
+objects:
+  track:
+    - person
+    - backpack
+    - bed
+    - remote
+    - laptop
+    - handbag
+    - dog
+    - cell phone
+    - keyboard
+    - tv
+    - car
+  genai:
+    enabled: true
+    objects:
+      - person
+      - dog
+      - car
+    debug_save_thumbnails: true
+    use_snapshot: true
+
+review:
+  alerts:
+    labels:
+      - person
+      - car
+      - dog
+  detections:
+    labels:
+      - person
+  genai:
+    enabled: true
+    detections: true
+    debug_save_thumbnails: true
+    preferred_language: en
+    alerts: true
+
+audio_transcription:
+  enabled: true
+  device: CPU
+  model_size: small
+
+auth:
+  trusted_proxies:
+    - 10.0.0.241
+
+timestamp_style:
+  position: br
+version: 0.18-0
+
+genai:
+  ollama-10:
+    api_key: ollama
+    base_url: http://10.0.0.210:11434/v1
+    model: embeddinggemma:latest
+    provider: openai
+    roles: []
+  newKey:
+    api_key: a633792eac6449c1b959355a90daeb02.5lcBH3-3t1Lea09Cvhovdqmm
+    base_url: https://ollama.com/v1
+    model: gemma4:31b
+    provider: openai
+    roles:
+      - descriptions
+      - chat
+
+
+
+
+      10.0.220.154
+      10.0.220.134
+      10.0.220.219
+      10.0.220.248
+      10.0.220.240
+      10.0.220.242
+      10.0.220.140
